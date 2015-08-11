@@ -17,6 +17,11 @@ class Board:
         self.packet_parser = parse(self.handle_packet)
         self.packet_factory = build
 
+        # this is incorrect, needs to be future/cb, but i'm out of time
+        # polling for now~
+        # self.loop = asyncio.get_event_loop()
+        # self.loop.call_soon(self.check_input)
+
     def start(self):
         if self.started:
             raise RuntimeError
@@ -24,10 +29,17 @@ class Board:
         yield from asyncio.sleep(self.sleep_time_until_ready)
         self.started = True
 
+    def check_input(self):
+        self.loop.call_soon(self.check_input)
+        data = self.serial_device.read()
+        if data:
+            print(data)
+            print()
+
     def handle_packet(self, packet):
         if packet.name == 'digital_io_message':
             port_value = self.digital_pin_ports[packet.port]
-             # TODO
+            # TODO
 
     def send_packet(self, name, **kwargs):
         packet = self.packet_factory(name, **kwargs)

@@ -155,9 +155,16 @@ def parse(handler):
             raise UnhandledPacketType
 
 
+def pack(value):
+    return value & 0x7F, value >> 7
+
+
 def build(name, **kwargs):
-    command = command_lookup[name]
-    name, sig = command_names[command]
+    try:
+        command = command_lookup[name]
+        name, sig = command_names[command]
+    except KeyError:
+        raise UnhandledPacketType
 
     if command in nibble_commands:
         args = mappp(sig, kwargs)
@@ -165,10 +172,12 @@ def build(name, **kwargs):
         if command in (0xD0, 0xC0):
             return bytearray([header, args[1], 0x00])
         else:
-            raise UnhandledPacketType
+            l, r = pack(args[1])
+            return bytearray([header, l, r])
 
     elif command in byte_commands:
-        pass
+        args = mappp(sig, kwargs)
+        return bytearray([command, args[0], args[1]])
 
     elif command in sysex_commands:
         start_sysex = command_lookup['start_sysex']

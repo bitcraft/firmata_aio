@@ -1,7 +1,6 @@
 import unittest
-from construct import Container
 from firmata_aio.protocol.commands import command_names, command_lookup, sysex_commands
-from firmata_aio.protocol.factory import parse, build
+from firmata_aio.protocol.factory import parse, build, Container
 
 
 class ProtocolTest(unittest.TestCase):
@@ -24,7 +23,7 @@ outgoing_test_data = {
     0xF0: (b'\xF0', None),
     0xF4: (b'\xF4\x0D\x01', Container(pin=13, mode=1)),
     0xF5: (b'\xF5\x00\x00', Container(pin=0, value=0)),
-    # 0xF7: (b'\xF7', None),  # not tested since this is normally never alone
+    # 0xF7: (b'\xF7', None),  # not tested b/c not normally found in use
 }
 
 incoming_test_data = {
@@ -64,3 +63,6 @@ for test_group in test_groups:
 
 print(build('report_analog_pin', pin=4, value=1))
 print(build('report_digital_port', port=2, value=1))
+print(build('set_pin_mode', pin=2, mode=1))
+print(build('set_digital_pin_value', pin=2, value=0))
+print(build('digital_io_message', port=3, value=2))

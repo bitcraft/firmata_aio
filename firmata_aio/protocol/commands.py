@@ -11,6 +11,10 @@ __all__ = [
     'command_names',
 ]
 
+INPUT, OUTPUT, ANALOG, \
+PWM, SERVO, I2C, ONEWIRE, \
+STEPPER, ENCODER = range(0, 9)
+
 # do not combine names and packet structure:
 # packets sometimes share same name and code, but have different
 # structure depending on the origin (firmata or client)
@@ -25,7 +29,7 @@ nibble_commands = {
 }
 byte_commands = {
     0xF0: ('start_sysex', ()),
-    0xF4: ('set_pin_mode', ('pin', 'state')),
+    0xF4: ('set_pin_mode', ('pin', 'mode')),
     0xF5: ('set_digital_pin_value', ('pin', 'value')),
     0xF7: ('stop_sysex', ()),
     0xF9: ('protocol_version', ('major', 'minor'))

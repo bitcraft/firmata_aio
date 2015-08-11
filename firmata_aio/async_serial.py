@@ -4,7 +4,7 @@ import serial
 
 
 class AsyncSerial:
-    """polling, yuck!...works on windows though
+    """polling, yuck!...works on win,mac,linux though
     """
 
     def __init__(self, *, loop=None, port='/dev/ttyACM0', speed=57600):
@@ -16,16 +16,17 @@ class AsyncSerial:
         self._incoming_buffer = bytearray()
         self._outgoing_buffer = bytearray()
         self._serial_device = serial.Serial(port, speed, timeout=.1)
-
         self.loop.call_soon(self.process_buffers)
 
     def process_buffers(self, *args):
-        self.data_received()
-        self.ready_to_write()
         self.loop.call_soon(self.process_buffers)
+        if self._serial_device.inWaiting():
+            self.data_received()
+        self.ready_to_write()
 
     def read(self):
         data = bytes(self._incoming_buffer)
+        # self._incoming_buffer.clear()
         del self._incoming_buffer[:]
         return data
 
@@ -34,9 +35,13 @@ class AsyncSerial:
 
     def data_received(self):
         self._incoming_buffer += self._serial_device.read()
+        print(self._incoming_buffer)
 
     def ready_to_write(self):
         result = self._serial_device.write(bytes(self._outgoing_buffer))
+        if result:
+            print(result)
+        # self._outgoing_buffer.clear()
         del self._outgoing_buffer[:]
 
     @asyncio.coroutine
@@ -48,7 +53,7 @@ class AsyncSerial:
 class SelectSerial:
     """
     Only works on unix/linux...no windows!
-    ...and no way to make it work either :(
+    ...and no way to make it work on windows either :(
     """
 
     def __init__(self, *, loop=None, port='/dev/ttyACM0', speed=57600):
@@ -60,6 +65,7 @@ class SelectSerial:
         self._incoming_buffer = bytearray()
         self._outgoing_buffer = bytearray()
         self._serial_device = serial.Serial(port, speed, timeout=0)
+        # self._serial_device.nonblocking()
 
         loop.add_reader(self._serial_device, self.data_received)
         # loop.add_writer(self._serial_device, self.ready_to_write)
